@@ -7,45 +7,72 @@ app.config(["$routeProvider", function($routeProvider) {
   .when("/", {
     templateUrl: "views/all.html",
     controller: "AllRecipesCtrl",
-    // by using resolve the controller gets loaded when the xhr request finished
     resolve: {
       'recipesData': function(RecipesService) {
-        return RecipesService.promise;
+        return RecipesService.getAllPromise;
       }
     }
   })
-  .when("/details/:id", {
+  .when("/details/:slug", {
     templateUrl: "views/details.html",
-    controller: "DetailsCtrl"
+    controller: "DetailsCtrl",
+    resolve: {
+      'recipeData': function(RecipesService) {
+        return RecipesService.getOnePromise;
+      }
+    }
   });
 }]);
 
 // get all the recipes
 app.service("RecipesService", function($http) {
-  var recipes = new Array;
+  var recipesIndex = new Array;
 
-  // a service in Angular is a singleton, so this is only executed once
-  var promise = $http.get('js/recipes.json').then(function(response) {
-    recipes = response.data;
+  var getAllPromise = $http.get('api/index.json').then(function(response) {
+    recipesIndex = response.data;
   }, function(reason) {
     alert("Failed fetching recipes (Status " + reason.status + ")");
   });
 
+  var getAll = function() {
+    return recipesIndex;
+  };
+
+  var getOnePromise = function(slug) {
+    var promise = $http.get('api/details/' + slug + '.md').then(function(response) {
+      return response.data;
+    }, function(reason) {
+      alert("Failed fetching recipe (Status " + reason.status + ")");
+    });
+
+    return promise;
+  };
+
+  var getOne = function(slug) {
+    return getOnePromise(slug).then(function(response) {
+      return response;
+    });
+  };
+
+  var getOneAsHTML = function(slug) {
+    return getOne(slug).then(function(response) {
+      return markdown.toHTML(response);
+    });
+  };
+
   return {
-    promise: promise,
-    getAll: function() {
-      return recipes;
-    },
-    getOne: function (id) {
-      return _.find(recipes, function(r) { return r.id == id });
-    }
+    getAllPromise: getAllPromise,
+    getOnePromise: getOnePromise,
+    getAll: getAll,
+    getOne: getOne,
+    getOneAsHTML: getOneAsHTML
   };
 });
 
-app.controller('AllRecipesCtrl', function($scope, $timeout, RecipesService) {
+app.controller('AllRecipesCtrl', function($scope, RecipesService) {
   $scope.recipes = RecipesService.getAll();
 });
 
 app.controller('DetailsCtrl', function($scope, $routeParams, RecipesService) {
-  $scope.recipe = RecipesService.getOne($routeParams.id);
+  $scope.recipe = RecipesService.getOneAsHTML($routeParams.slug);
 });

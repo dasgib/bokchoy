@@ -1,8 +1,6 @@
-<div>
 <h1>All Recipes</h1>
 <ul>
   <li ng-repeat="recipe in recipes">
-    <a href="/#/details/{{ recipe.id }}">[{{ recipe.id }}] - {{ recipe.title }} - {{ recipe.time }} minutes</a>
+    <a href="/#/details/{{ recipe.slug }}">{{ recipe.title }}</a>
   </li>
 </ul>
-</div>

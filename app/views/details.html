@@ -1,12 +1,4 @@
-<h1>{{ recipe.title}} in {{ recipe.time }} minutes</h1>
-
-<h2>Ingredients</h2>
-<ul>
-  <li ng-repeat="ingredient in recipe.ingredients">{{ ingredient }}</li>
-</ul>
-
-<h2>Preparation</h2>
-<p>{{ recipe.body }}</p>
+<div ng-bind-html-unsafe="recipe"></div>
 
 <hr>
 <a href="/#/">View all recipes</a>
