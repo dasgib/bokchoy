@@ -17,6 +17,13 @@ app.config(function($stateProvider, $urlRouterProvider) {
     }
   };
 
+  var new_recipe = {
+    name: 'new_recipe',
+    url: "/new",
+    templateUrl: "views/new.html",
+    controller: 'NewRecipeCtrl'
+  };
+
   var details = {
     name: 'details',
     url: "/details/:slug",
@@ -31,6 +38,7 @@ app.config(function($stateProvider, $urlRouterProvider) {
 
   $stateProvider
     .state(recipes)
+    .state(new_recipe)
     .state(details);
 });
 
@@ -56,6 +64,9 @@ app.service("RecipesService", function($http) {
     getAll: getAllPromise,
     getOne: getOnePromise
   };
+});
+
+app.controller('NewRecipeCtrl', function($scope) {
 });
 
 app.controller('AllRecipesCtrl', function($scope, recipesData) {
