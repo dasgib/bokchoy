@@ -1,78 +1,67 @@
 'use strict';
 
-var app = angular.module('main', []);
+var app = angular.module('main', ['ui.state']);
+app.config(function($stateProvider, $urlRouterProvider) {
+  $urlRouterProvider.otherwise("/");
 
-app.config(["$routeProvider", function($routeProvider) {
-  $routeProvider
-  .when("/", {
+  var recipes = {
+    name: 'recipes',
+    url: "/",
     templateUrl: "views/all.html",
-    controller: "AllRecipesCtrl",
+    controller: 'AllRecipesCtrl',
     resolve: {
+      // we can request access to recipesData in our controllers params
       'recipesData': function(RecipesService) {
-        return RecipesService.getAllPromise;
+        return RecipesService.getAll();
       }
     }
-  })
-  .when("/details/:slug", {
+  };
+
+  var details = {
+    name: 'details',
+    url: "/details/:slug",
     templateUrl: "views/details.html",
-    controller: "DetailsCtrl",
+    controller: 'DetailsCtrl',
     resolve: {
-      'recipeData': function(RecipesService) {
-        return RecipesService.getOnePromise;
+      'recipeData': function(RecipesService, $stateParams) {
+        return RecipesService.getOne($stateParams.slug);
       }
     }
-  });
-}]);
+  };
+
+  $stateProvider
+    .state(recipes)
+    .state(details);
+});
 
 // get all the recipes
 app.service("RecipesService", function($http) {
-  var recipesIndex = new Array;
-
-  var getAllPromise = $http.get('api/index.json').then(function(response) {
-    recipesIndex = response.data;
-  }, function(reason) {
-    alert("Failed fetching recipes (Status " + reason.status + ")");
-  });
-
-  var getAll = function() {
-    return recipesIndex;
-  };
+  var getAllPromise = function() {
+    return $http.get('api/index.json').then(function(response) {
+      return response.data;
+    }, function(reason) {
+      alert("Failed fetching recipes (Status " + reason.status + ")");
+    });
+  }
 
   var getOnePromise = function(slug) {
-    var promise = $http.get('api/details/' + slug + '.md').then(function(response) {
+    return $http.get('api/details/' + slug + '.md').then(function(response) {
       return response.data;
     }, function(reason) {
       alert("Failed fetching recipe (Status " + reason.status + ")");
     });
-
-    return promise;
-  };
-
-  var getOne = function(slug) {
-    return getOnePromise(slug).then(function(response) {
-      return response;
-    });
-  };
-
-  var getOneAsHTML = function(slug) {
-    return getOne(slug).then(function(response) {
-      return markdown.toHTML(response);
-    });
   };
 
   return {
-    getAllPromise: getAllPromise,
-    getOnePromise: getOnePromise,
-    getAll: getAll,
-    getOne: getOne,
-    getOneAsHTML: getOneAsHTML
+    getAll: getAllPromise,
+    getOne: getOnePromise
   };
 });
 
-app.controller('AllRecipesCtrl', function($scope, RecipesService) {
-  $scope.recipes = RecipesService.getAll();
+app.controller('AllRecipesCtrl', function($scope, recipesData) {
+  $scope.recipes = recipesData;
 });
 
-app.controller('DetailsCtrl', function($scope, $routeParams, RecipesService) {
-  $scope.recipe = RecipesService.getOneAsHTML($routeParams.slug);
+app.controller('DetailsCtrl', function($scope, recipeData) {
+  $scope.recipe = markdown.toHTML(recipeData);
 });
