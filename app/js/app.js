@@ -1,6 +1,13 @@
 'use strict';
 
 var app = angular.module('main', ['ui.state']);
+
+app.filter('markdown', function() {
+  return function(value) {
+    return markdown.toHTML(value || '');
+  };
+});
+
 app.config(function($stateProvider, $urlRouterProvider) {
   $urlRouterProvider.otherwise("/");
 

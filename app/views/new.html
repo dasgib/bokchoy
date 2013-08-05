@@ -3,3 +3,8 @@
   <textarea rows="10" cols="60" ng-model="recipe.description"></textarea>
   <input type="submit" value="Save recipe">
 </form>
+
+<div class="markdown-preview">
+  <h1>{{ recipe.title }}</h1>
+  <div ng-bind-html-unsafe="recipe.description | markdown"></div>
+</div>
