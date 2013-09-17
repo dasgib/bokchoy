@@ -8,14 +8,17 @@ a {
   color: #424242;
 }
 
-a.button {
+a.button, input.button {
   font-family: 'Crafty Girls';
+  font-size: 16px;
   background-color: #299684;
   color: white;
   padding: .5em;
+  border: none;
+  cursor: pointer;
 }
 
-a.button:hover {
+a.button:hover, input.button:hover {
   background-color: #1E6D60
 }
 
@@ -45,8 +48,16 @@ ul li:nth-child(odd) {
   background-color: #EBE7CA;
 }
 
+input, textarea {
+  border: 1px solid grey;
+}
+
 .content {
   background-color: #FFFBDF;
   padding: 1em 2em 2em 2em;
   margin: 2em;
+}
+
+.new_recipe_form .title {
+  font-size: 20px;
 }
