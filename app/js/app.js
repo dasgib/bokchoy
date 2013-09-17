@@ -3,7 +3,7 @@
 var app = angular.module('main', []);
 
 app.config(function($routeProvider, $locationProvider) {
-  $locationProvider.html5Mode(false);
+  $locationProvider.html5Mode(false); // maaayyybe set this to true if dropbox doesnt work
 
   $routeProvider
   .when("/", {
@@ -83,6 +83,7 @@ app.controller('NewRecipeCtrl', function($scope, RecipesService) {
 
 app.controller('AllRecipesCtrl', function($scope, recipesData, RecipesService) {
   $scope.recipes = recipesData;
+  RecipesService.getDropboxClient(); // we get redirected back to root after dropbox-auth
 });
 
 app.controller('DetailsCtrl', function($scope, recipeData) {
