@@ -2,7 +2,9 @@
 
 var app = angular.module('main', []);
 
-app.config(["$routeProvider", function($routeProvider) {
+app.config(function($routeProvider, $locationProvider) {
+  $locationProvider.html5Mode(false);
+
   $routeProvider
   .when("/", {
     templateUrl: "views/all.html",
@@ -29,7 +31,7 @@ app.config(["$routeProvider", function($routeProvider) {
     templateUrl: "views/new.html",
     controller: "NewRecipeCtrl"
   });
-}]);
+});
 
 // get all the recipes
 app.service("RecipesService", function($http) {
@@ -49,16 +51,37 @@ app.service("RecipesService", function($http) {
     });
   };
 
+  var getDropboxClient = function() {
+    var dbClient = new Dropbox.Client({ key: "lp0fusv15omdbx3" });
+
+    return dbClient.authenticate(function(error, client) {
+      if (error) {
+        return alert(error);
+      }
+
+      return client;
+    });
+  };
+
   return {
     getIndex: getIndexPromise,
-    getOne: getOnePromise
+    getOne: getOnePromise,
+    getDropboxClient: getDropboxClient
   };
 });
 
-app.controller('NewRecipeCtrl', function($scope) {
+app.controller('NewRecipeCtrl', function($scope, RecipesService) {
+  $scope.saveRecipe = function(recipe) {
+    var dropboxClient = RecipesService.getDropboxClient();
+    dropboxClient.writeFile("BokChoyRecipes/" + (recipe.title + ".md"), recipe.description, function(error, stat) {
+      if (error) {
+        return alert(error);
+      }
+    });
+  };
 });
 
-app.controller('AllRecipesCtrl', function($scope, recipesData) {
+app.controller('AllRecipesCtrl', function($scope, recipesData, RecipesService) {
   $scope.recipes = recipesData;
 });
 
