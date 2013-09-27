@@ -1,3 +1,5 @@
+@import "//fonts.googleapis.com/css?family=Crafty+Girls";
+
 body {
   font-family: Helvetica, Trebuchet, Arial, sans-serif;
   background-color: #72644A;
@@ -8,19 +10,29 @@ a {
   color: #424242;
 }
 
-a.button {
+.button {
   font-family: 'Crafty Girls';
   background-color: #299684;
   color: white;
-  padding: .5em;
+  padding: .5em 1em;
+  font-size: 100%;
+  border: 0;
+  cursor: pointer;
+  border-radius: 3px;
 }
 
-a.button:hover {
+.button:hover {
   background-color: #1E6D60
+}
+
+#dropbox-button {
+  background-color: #007FE1;
 }
 
 hr {
   margin: 1.5em 0;
+  border: 0;
+  border-bottom: 1px solid #72644A;
 }
 
 h1 {
@@ -43,10 +55,12 @@ ul li {
 
 ul li:nth-child(odd) {
   background-color: #EBE7CA;
+  border-radius: 3px;
 }
 
 .content {
   background-color: #FFFBDF;
   padding: 1em 2em 2em 2em;
   margin: 2em;
+  border-radius: 3px;
 }
