@@ -9,11 +9,11 @@ app.filter('markdown', function() {
 });
 
 app.config(function($routeProvider, $locationProvider) {
-  $locationProvider.html5Mode(false); // maaayyybe set this to true if dropbox doesnt work
+  $locationProvider.html5Mode(true); // needed to make dropbox.js work
 
   $routeProvider
   .when("/", {
-    templateUrl: "views/all.html",
+    templateUrl: "/views/all.html",
     controller: "AllRecipesCtrl",
     resolve: {
       // recipesData is now available in the controller
@@ -23,7 +23,7 @@ app.config(function($routeProvider, $locationProvider) {
     }
   })
   .when("/details/:id", {
-    templateUrl: "views/details.html",
+    templateUrl: "/views/details.html",
     controller: "DetailsCtrl",
     resolve: {
       // $routeParams does not work because it is only available after
@@ -34,7 +34,7 @@ app.config(function($routeProvider, $locationProvider) {
     }
   })
   .when("/new", {
-    templateUrl: "views/new.html",
+    templateUrl: "/views/new.html",
     controller: "NewRecipeCtrl"
   });
 });
@@ -42,7 +42,7 @@ app.config(function($routeProvider, $locationProvider) {
 // get all the recipes
 app.service("RecipesService", function($http) {
   var getIndexPromise = function() {
-    return $http.get('js/recipes.json').then(function(response) {
+    return $http.get('/js/recipes.json').then(function(response) {
       return response.data;
     }, function(reason) {
       alert("Failed fetching recipes (Status " + reason.status + ")");
@@ -58,40 +58,75 @@ app.service("RecipesService", function($http) {
   };
 
   var getDropboxClient = function() {
-    var dbClient = new Dropbox.Client({ key: "lp0fusv15omdbx3" });
+    var client = new Dropbox.Client({ key: "lp0fusv15omdbx3" });
+    client.authDriver(new Dropbox.AuthDriver.Popup());
+
+    return client.authenticate({ interactive: false }, function(error, client) {
+      if (error) {
+        alert(error);
+        return false;
+      }
+    });
+  };
+
+  var doDropboxAuth = function(callback) {
+    var dbClient = getDropboxClient();
 
     return dbClient.authenticate(function(error, client) {
       if (error) {
-        return alert(error);
+        alert(error);
+        return false;
       }
 
-      return client;
+      if (typeof callback === "function") callback(client);
     });
   };
 
   return {
     getIndex: getIndexPromise,
     getOne: getOnePromise,
-    getDropboxClient: getDropboxClient
+    getDropboxClient: getDropboxClient,
+    doDropboxAuth: doDropboxAuth
   };
 });
 
 app.controller('NewRecipeCtrl', function($scope, RecipesService) {
+  $scope.dropbox = RecipesService.getDropboxClient();
+
   $scope.saveRecipe = function(recipe) {
-    var dropboxClient = RecipesService.getDropboxClient();
-    dropboxClient.writeFile("BokChoyRecipes/" + (recipe.title + ".md"), recipe.description, function(error, stat) {
+    $scope.dropbox.writeFile("BokChoyRecipes/" + (recipe.title + ".md"), recipe.description, function(error, stat) {
       if (error) {
-        return alert(error);
+        alert(error);
+        return false;
       }
+
+      return true;
     });
   };
 });
 
 app.controller('AllRecipesCtrl', function($scope, recipesData, RecipesService) {
+  var dbClient = RecipesService.getDropboxClient();
+
   $scope.recipes = recipesData;
-  RecipesService.getDropboxClient(); // we get redirected back to root after dropbox-auth
+  $scope.dropboxConnected = dbClient.isAuthenticated();
+
+  // we get redirected here after authenticating
+  // -> this is for saving the creds to localstorage
+  Dropbox.AuthDriver.Popup.oauthReceiver();
+
+  // open popup with dropbox auth
+  $scope.connectToDropbox = function() {
+    RecipesService.doDropboxAuth(function(client) {
+      $scope.dropboxConnected = client.isAuthenticated();
+
+      // angular cannot know what/when we changed (because there are ajax calls in it)
+      // thus we have to call:
+      $scope.$apply();
+    });
+  };
 });
 
-app.controller('DetailsCtrl', function($scope, recipeData) {
+app.controller('DetailsCtrl', function($scope, recipeData, RecipesService) {
   $scope.recipe = recipeData;
 });

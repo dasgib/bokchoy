@@ -2,11 +2,10 @@
 <h1>All Recipes</h1>
 <ul>
   <li ng-repeat="recipe in recipes">
-    <a href="#/details/{{ recipe.id }}">[{{ recipe.id }}] - {{ recipe.title }} - {{ recipe.time }} minutes</a>
+    <a href="/details/{{ recipe.id }}">{{ recipe.title }}</a>
   </li>
 </ul>
 </div>
 
-<hr>
-
-<a href="#/new" class="button">Add new recipe</a>
+<button id="dropbox-button" class="button" ng-show="! dropboxConnected" ng-click="connectToDropbox()">Connect to Dropbox</button>
+<a id="new-recipe-button" href="/new" class="button" ng-show="dropboxConnected">Add new recipe</a>
